@@ -12,7 +12,7 @@ const TABS = [
     { key: 'therapists', label: 'Therapists' },
     { key: 'assignments', label: 'Assignments' },
     { key: 'availability', label: 'Availability' },
-    { key: 'fullSchedule', label: 'Full Schedule' },
+    { key: 'fullSchedule', label: 'Patient Schedule' },
 ];
 
 export default function SchedulerTester() {
