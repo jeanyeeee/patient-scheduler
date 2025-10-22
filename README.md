@@ -1,96 +1,94 @@
+# Patient Scheduler
 
-# Patient Scheduler App
-
-A Next.js application for scheduling therapy sessions between patients and therapists.
+Next.js app to schedule weekly therapy sessions for patients with assigned therapists, using a simple engine and shared React context for state.
 
 ## Features
 
-- **Smart Scheduling Algorithm**: Automatically schedules therapy sessions while respecting therapist specialties and availability
-- **Even Distribution**: Spreads patient sessions evenly across the week
-- **Conflict Detection**: Prevents double-booking of therapists and patients
-- **Visual Schedule Display**: Shows weekly schedules for both patients and therapists
-- **Utilization Tracking**: Displays therapist utilization rates
-- **Unscheduled Goals**: Flags goals that couldn't be scheduled with reasons
+- **Tabs UI**: Patients, Therapists, Assignments, Availability, Patient Schedule, Ward Schedule
+- **One-click generation**: "Get Assignment" creates the weekly plan using a scheduling engine
+- **Shared state**: Schedule stored in React Context; all tabs reflect the same plan
+- **Availability grid**: Weekly free-slot view (grey = unavailable, role-colored = free)
+- **Patient/Ward views**: Per-patient weekly tables and per-day ward grid (patients × time)
+- **Conflict-safe**: No therapist/patient double-booking; tries other days when target day is full
+
+## Scheduling Model (summary)
+
+- Days: Monday–Friday
+- Slots per day: 7 (09:00, 10:00, 11:00, 13:00, 14:00, 15:00, 16:00)
+- One session = 1 hour
+- A therapist can see only 1 patient per slot; a patient can attend only 1 session per slot
+- Each patient has weekly goals per therapy type and fixed therapist assignments per role
+- If target day is full, the engine tries other days; unassigned roles are skipped
+- Ordering: more restrictive therapists (fewer free slots that day) are scheduled first
+
+See `SCHEDULER_LOGIC.md` for details.
 
 ## Project Structure
 
 ```
-/patient-scheduler-app
-├── /public                    # Static assets
-├── /src
-│   ├── /components           # React components
-│   │   ├── SchedulerTester.jsx    # Main UI component
-│   │   ├── TherapistCard.jsx      # Therapist info display
-│   │   ├── PatientCard.jsx        # Patient info display
-│   │   ├── ScheduleSummary.jsx    # Summary statistics
-│   │   ├── PatientSchedule.jsx    # Patient schedule view
-│   │   ├── TherapistSchedule.jsx  # Therapist schedule view
-│   │   ├── UnscheduledGoals.jsx   # Alert for unscheduled goals
-│   │   └── RulesPanel.jsx         # Scheduling rules display
-│   │
-│   ├── /lib                  # Business logic
-│   │   └── schedulingEngine.js    # Core scheduling algorithm
-│   │
-│   ├── /data                 # Sample data
-│   │   ├── sampleTherapists.js    # Sample therapist data
-│   │   └── samplePatients.js      # Sample patient data
-│   │
-│   ├── /pages                # Next.js pages
-│   │   ├── index.js              # Main page
-│   │   └── _app.js               # App configuration
-│   │
-│   └── /styles               # Global styles
-│       └── globals.css           # Tailwind CSS imports
-│
-├── package.json              # Dependencies and scripts
-├── tailwind.config.js        # Tailwind configuration
-└── postcss.config.js         # PostCSS configuration
+patient-scheduler/
+├── public/
+├── src/
+│  └── app/
+│     ├── components/
+│     │  ├── SchedulerTester.jsx        # Main tabbed UI
+│     │  ├── PatientList.jsx            # Patients & goals
+│     │  ├── TherapistList.jsx          # Therapists by role (colored)
+│     │  ├── AssignmentsView.jsx        # Patient→therapist role mappings
+│     │  ├── AvailabilityGrid.jsx       # Weekly availability (role colors)
+│     │  ├── PatientSchedule.jsx        # Per-patient weekly tables (+ Get Assignment)
+│     │  └── WardSchedule.jsx           # Per-day ward grid (patients × time)
+│     ├── context/
+│     │  └── ScheduleContext.jsx        # Shared schedule state (generate/clear)
+│     ├── data/
+│     │  ├── samplePatient.js
+│     │  ├── sampleTherapist.js
+│     │  ├── samplePatientTherapist.js
+│     │  └── sampleTherapistTime.js     # DAYS, SLOTS, availability
+│     ├── lib/
+│     │  └── schedulingEngine.js        # Core scheduling algorithm
+│     ├── page.js
+│     └── styles/globals.css
+├── SCHEDULER_LOGIC.md
+├── package.json
+├── postcss.config.mjs
+└── next.config.mjs
 ```
 
 ## Getting Started
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+1) Install dependencies
+```bash
+npm install
+```
 
-2. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+2) Run dev server
+```bash
+npm run dev
+```
 
-3. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+3) Open the app
+`http://localhost:3000`
 
-## Scheduling Rules
+## Using the App
 
-1. **RULE 1:** Therapists work Monday – Friday, 9 AM – 5 PM only.
-2. **RULE 2:** Each slot = 30 minutes → maximum 16 slots per day, 80 slots per week per therapist.
-3. **RULE 3:** Each therapist can perform only specific therapy types.
-4. **RULE 4:** No therapist double-booked – one session per slot.
-5. **RULE 5:** No patient double-booked – one session per slot.
-6. **RULE 6:** Each patient has required session counts per therapy type per week.
-7. **RULE 7:** Spread sessions evenly across the week (avoid clustering on one day).
-8. **RULE 8:** If a patient's weekly therapy goals cannot be scheduled, flag as "to be rescheduled."
+- Patients/Therapists tabs: browse sample data
+- Assignments: see per-role therapist assignments per patient
+- Availability: weekly free slots per therapist (role colors, grey unavailable)
+- Patient Schedule: click "Get Assignment" to generate a weekly plan; "Clear" to reset
+- Ward Schedule: per-day view with patients (rows) × time slots (columns), using the same plan
 
-## Usage
+## Data & Colors
 
-1. **Configuration Tab:** View therapists and their specialties, and patients with their weekly goals
-2. **Run Scheduler:** Click the "Run Scheduler" button to generate schedules
-3. **Results Tab:** View summary statistics, patient schedules, and therapist schedules
-4. **Rules Tab:** Review the scheduling rules and constraints
+- Roles and colors: Acupuncture (orange), Speech (red), Music/Art (yellow), Physio (blue), Occupational (green)
+- Sample data lives under `src/app/data/`
 
-## Technologies Used
+## Customize
 
-- **Next.js 14** - React framework
-- **React 18** - UI library
-- **Tailwind CSS** - Styling
-- **Lucide React** - Icons
+- Edit goals/assignments/availability in `src/app/data/`
+- Tweak engine behavior in `src/app/lib/schedulingEngine.js` (ordering, fallbacks, etc.)
 
-## Customization
+## Tech
 
-You can modify the sample data in:
-- `src/data/sampleTherapists.js` - Add/modify therapists
-- `src/data/samplePatients.js` - Add/modify patients
-
-The scheduling logic can be customized in `src/lib/schedulingEngine.js`.
+- Next.js + React
+- Tailwind CSS
